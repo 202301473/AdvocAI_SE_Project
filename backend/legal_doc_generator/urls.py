@@ -22,8 +22,8 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/ai-generator/', include('ai_generator.urls')),
-    path('api/documents/', include('documents.urls')),
-    path('api/utils/', include('utils.urls')),
+    path('api/documents/', include('ai_generator.urls')),  # Alias for frontend compatibility
+    # path('api/utils/', include('utils.urls')),  # App doesn't exist
     path('api/auth/', include('authentication.urls')),
     path('api/summarizer/', include('document_summarizer.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

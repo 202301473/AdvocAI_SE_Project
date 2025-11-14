@@ -1,0 +1,16 @@
+# Environments
+.env
+
+# Dependencies
+node_modules/
+
+# Django
+db.sqlite3
+media/
+
+# Python
+__pycache__/
+venv/
+
+backend/.env
+*.pyc

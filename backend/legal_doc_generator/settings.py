@@ -62,8 +62,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'ai_generator',
-    'documents',
-    'utils',
     'authentication',
     'document_summarizer',
     'corsheaders',
@@ -188,7 +186,7 @@ AUTHENTICATION_BACKENDS = ['authentication.backends.EmailBackend']
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'authentication.jwt_authentication.MongoEngineJWTAuthentication',
+        'authentication.authentication.MongoEngineJWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',

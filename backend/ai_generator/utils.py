@@ -104,7 +104,62 @@ def get_disclaimer(jurisdiction: str) -> str:
 
 ---
 """
+def intent_classification_node(state: ConversationState) -> ConversationState:
+    """
+    Node 1: Classifies the user's intent.
+    Determines if this is a document generation, modification, or something else.
+    """
+    model = get_llm()
+    
+    # Get the last user message
+    last_message = state["messages"][-1] if state["messages"] else ""
+    user_query = last_message.get("content", "") if isinstance(last_message, dict) else str(last_message)
+    
+    # Check if there's existing document context (indicates this is a modification request)
+    has_document_context = "Current document content:" in user_query
+    
+    if has_document_context:
+        # This is a document modification/revision request - skip to generation
+        state["current_intent"] = "document_modification"
+        state["is_feasible"] = True
+        state["document_type"] = "Document Revision"
+        state["gathered_info"] = {"modification_request": "yes"}
+        state["next_step"] = "generate_document"
+        return state
+    
+classification_prompt =f """You are an intent classifier. Analyze this user query and classify the intent.
 
+User Query: "{user_query}"
+
+Respond with ONLY ONE of these intents:
+- "document_generation" - if the user wants to create, draft, or generate a NEW legal document
+- "summarization" - if the user wants to summarize a document
+- "other" - for any other request
+
+Respond with just the intent name, nothing else. """
+
+    try:
+        response = model.generate_content(
+            classification_prompt,
+            generation_config=genai.types.GenerationConfig(
+                temperature=0.3,
+                max_output_tokens=50,
+            )
+        )
+        intent = response.candidates[0].content.parts[0].text.strip().lower()
+        
+        # Validate intent
+        if intent not in ["document_generation", "summarization", "other"]:
+            intent = "other"
+        
+        state["current_intent"] = intent
+        state["next_step"] = "route_intent"
+    except Exception as e:
+        print(f"Error in intent classification: {e}")
+        state["current_intent"] = "other"
+        state["next_step"] = "route_intent"
+    
+    return state
 
 def get_document_questions(document_type: str) -> str:
     """

@@ -164,7 +164,9 @@ def upload_signature(request):
     Accepts an image upload and returns its accessible URL for embedding in markdown.
     """
     file_obj = request.FILES.get('signature') or request.FILES.get('file')
-
+    if not file_obj:
+        return Response({'error': 'No file uploaded. Use form field name "signature".'}, status=400)
+        
     try:
         upload_result = cloudinary.uploader.upload(file_obj)
         print(f"Cloudinary upload result: {upload_result}") # Add this line for debugging

@@ -260,5 +260,3 @@ def conversation_detail(request, pk):
             return Response(status=status.HTTP_204_NO_CONTENT)
         else:
             return Response({'error': 'Failed to delete conversation'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-@api_view(['POST'])

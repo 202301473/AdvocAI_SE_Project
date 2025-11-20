@@ -157,6 +157,21 @@ def _generate_pdf_from_markdown(markdown_content):
     result_file.seek(0)
     return result_file
 
+@api_view(['POST'])
+@parser_classes([MultiPartParser, FormParser])
+def upload_signature(request):
+    """
+    Accepts an image upload and returns its accessible URL for embedding in markdown.
+    """
+    file_obj = request.FILES.get('signature') or request.FILES.get('file')
+
+    try:
+        upload_result = cloudinary.uploader.upload(file_obj)
+        print(f"Cloudinary upload result: {upload_result}") # Add this line for debugging
+        return Response({'url': upload_result['secure_url']}, status=201)
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
 
 @api_view(['GET'])
 def download_latest_conversation_pdf(request, pk):

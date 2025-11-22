@@ -260,3 +260,58 @@ def conversation_detail(request, pk):
             return Response(status=status.HTTP_204_NO_CONTENT)
         else:
             return Response({'error': 'Failed to delete conversation'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+@api_view(['POST'])
+def share_document_with_user(request, pk):
+    """
+    Adds, updates, or removes a user's share permissions for a specific document.
+    Requires authentication.
+    """
+    if not request.user.is_authenticated:
+        return Response({'error': 'Authentication required.'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    username_to_share_with = request.data.get('username')
+    permission_level = request.data.get('permission_level') # 'view', 'edit', or None to remove
+
+    if not username_to_share_with:
+        return Response({'error': 'Username is required.'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Optional: Validate if the username_to_share_with exists in your User model
+    # from authentication.models import User # Assuming User model is here
+    # if not User.objects.filter(username=username_to_share_with).exists():
+    #     return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+    # Check if the requesting user is the owner of the document
+    conversation = get_conversation_by_id(pk)
+    if not conversation:
+        return Response({'error': 'Document not found.'}, status=status.HTTP_404_NOT_FOUND)
+    
+    if conversation.get('owner') != request.user.username:
+        return Response({'error': 'You do not have permission to share this document.'}, status=status.HTTP_403_FORBIDDEN)
+
+    try:
+        success = update_user_share_permissions(pk, username_to_share_with, permission_level)
+        if success:
+            if permission_level:
+                return Response({'status': f'Document shared with {username_to_share_with} with {permission_level} permissions.'}, status=status.HTTP_200_OK)
+            else:
+                return Response({'status': f'Share permissions for {username_to_share_with} removed.'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': 'Failed to update share permissions.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    except Exception as e:
+        print(f"Error in share_document_with_user: {e}")
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+def get_version_content(request, pk, version_number):
+    """
+    Retrieves the content of a specific document version from a conversation.
+    """
+    try:
+        content = get_document_version_content(pk, version_number)
+        if content is not None:
+            return Response({'content': content}, status=status.HTTP_200_OK)
+        return Response({'error': 'Version content not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        print(f"Error in get_version_content: {e}")
+        return Response({'error': f'Error retrieving version content: {e}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -725,7 +725,7 @@ export default function Home() {
             <div className="border-t border-border/50 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
               <p className="text-xs text-muted-foreground">&copy; 2025 Advoc AI. All rights reserved.</p>
               <div className="flex items-center gap-6">
-                <span className="text-xs text-muted-foreground">Built with AI for legal professionals</span>
+                <span className="text-xs text-muted-foreground">Powered by AI for legal professionals</span>
               </div>
             </div>
           </div>
